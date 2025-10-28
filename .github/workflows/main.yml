@@ -1,0 +1,35 @@
+name: Build Android APK
+
+on:
+  workflow_dispatch:  # Lets you trigger manually from Actions tab
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y autoconf automake libtool pkg-config \
+              libffi-dev libltdl-dev openjdk-17-jdk unzip git
+          pip install buildozer==1.5.0 cython virtualenv kivy==2.3.1 kivymd fpdf pillow plyer
+
+      - name: Build Android APK
+        run: |
+          buildozer init || true
+          buildozer -v android debug
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: SogoPOS-APK
+          path: bin/*.apk
